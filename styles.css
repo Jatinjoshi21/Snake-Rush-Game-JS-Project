@@ -1,0 +1,114 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+
+:root {
+  --background-primary-color: rgb(20, 20, 20);
+  --text-primary-color: rgb(235, 235, 235);
+  --padding-sm: 5px;
+  --padding-md: 10px;
+  --padding-lg: 15px;
+  --padding-xl: 20px;
+  --border-color: #333333;
+  --border-radius-sm: 5px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 15px;
+}
+
+html {
+  background-color: var(--background-primary-color);
+  color: var(--text-primary-color);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+main,
+section {
+  height: 100%;
+  width: 100%;
+}
+
+section {
+  padding: var(--padding-lg) var(--padding-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--padding-lg);
+}
+
+.infos {
+  display: flex;
+  justify-content: space-between;
+}
+
+.info {
+  border: 1px solid var(--border-color);
+  padding: var(--padding-md);
+  border-radius: var(--border-radius-lg);
+}
+
+.board {
+  border: 1px solid var(--border-color);
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  grid-template-rows: repeat(auto-fill, minmax(50px, 1fr));
+}
+
+.block {
+  border: 1px solid var(--border-color);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.fill {
+  background-color: var(--text-primary-color);
+}
+
+.food {
+  background-color: rgb(235, 111, 80);
+}
+
+.modal {
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #33333389;
+  width: 100%;
+  height: 100%;
+}
+.modal .start,
+.modal .restart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal .restart {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal button {
+  padding: var(--border-radius-md);
+  border-radius: var(--border-radius-sm);
+  color: black;
+  background-color: white;
+  border: none;
+  cursor: pointer;
+}

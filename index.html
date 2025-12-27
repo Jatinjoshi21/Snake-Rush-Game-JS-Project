@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snake Game</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+      }
+
+      :root {
+        --background-primary-color: rgb(20, 20, 20);
+        --text-primary-color: rgb(235, 235, 235);
+        --padding-sm: 5px;
+        --padding-md: 10px;
+        --padding-lg: 15px;
+        --padding-xl: 20px;
+        --border-color: #333333;
+        --border-radius-sm: 5px;
+        --border-radius-md: 10px;
+        --border-radius-lg: 15px;
+      }
+
+      html {
+        background-color: var(--background-primary-color);
+        color: var(--text-primary-color);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+          sans-serif;
+      }
+
+      main,
+      section {
+        height: 100%;
+        width: 100%;
+      }
+
+      section {
+        padding: var(--padding-lg) var(--padding-xl);
+        display: flex;
+        flex-direction: column;
+        gap: var(--padding-lg);
+      }
+
+      .infos {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .info {
+        border: 1px solid var(--border-color);
+        padding: var(--padding-md);
+        border-radius: var(--border-radius-lg);
+      }
+
+      .board {
+        border: 1px solid var(--border-color);
+        flex-grow: 1;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        grid-template-rows: repeat(auto-fill, minmax(50px, 1fr));
+      }
+
+      .block {
+        border: 1px solid var(--border-color);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+      }
+
+      .fill {
+        background-color: var(--text-primary-color);
+      }
+
+      .food {
+        background-color: rgb(235, 111, 80);
+      }
+
+      .modal {
+        position: absolute;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #33333389;
+        width: 100%;
+        height: 100%;
+      }
+      .modal .start,
+      .modal .restart {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .modal .restart {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .modal button {
+        padding: var(--border-radius-md);
+        border-radius: var(--border-radius-sm);
+        color: black;
+        background-color: white;
+        border: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section>
+        <div class="infos">
+          <div class="info">
+            <h2>High Score: <span class="highscore">0</span></h2>
+          </div>
+          <div class="info">
+            <h2>Score: <span class="score">0</span></h2>
+          </div>
+          <div class="info">
+            <h2>Time: <span class="time">00-00</span></h2>
+          </div>
+        </div>
+        <div class="board"></div>
+      </section>
+      <div class="modal">
+        <div class="start">
+          <h2>Start The Game</h2>
+          <button>Start</button>
+        </div>
+        <div class="restart">
+          <h2>Game Over</h2>
+          <button>Restart</button>
+        </div>
+      </div>
+    </main>
+    <script>
+      const board = document.querySelector(".board");
+      const blockWidth = 50;
+      const blockHeight = 50;
+      const startButton = document.querySelector(".start");
+      const restartButton = document.querySelector(".restart");
+      const startmodal = document.querySelector(".start");
+      const restartmodal = document.querySelector(".restart");
+      const modal = document.querySelector(".modal");
+      let intervalId = null;
+      const highscore = document.querySelector(".highscore");
+      const score = document.querySelector(".score");
+      const time = document.querySelector(".time");
+      let timeIntervalId = null;
+
+      let Score = 0;
+      let Highscore = localStorage.getItem("highscore") || 0;
+      let Time = `0-0`;
+
+      highscore.innerText = Highscore;
+      score.innerText = Score;
+      time.innerText = Time;
+
+      const columns = Math.floor(board.clientWidth / blockWidth);
+      const rows = Math.floor(board.clientHeight / blockHeight);
+      let blocks = [];
+      let snake = [
+        {
+          x: 1,
+          y: 2,
+        },
+      ];
+      let direction = "right";
+      let food = {
+        x: Math.floor(Math.random() * rows),
+        y: Math.floor(Math.random() * columns),
+      };
+
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < columns; j++) {
+          const block = document.createElement("div");
+          block.classList.add("block");
+          board.appendChild(block);
+          blocks[`${i}-${j}`] = block;
+        }
+      }
+
+      startButton.addEventListener("click", () => {
+        modal.style.display = "none";
+        intervalId = setInterval(() => {
+          render();
+        }, 300);
+        timeIntervalId = setInterval(() => {
+          let [minutes, seconds] = Time.split("-").map(Number);
+          if (seconds >= 60) {
+            minutes += 1;
+            seconds = 0;
+          } else {
+            seconds = seconds + 1;
+          }
+          Time = `${minutes}-${seconds}`;
+          time.innerText = Time;
+        }, 1000);
+      });
+
+      restartButton.addEventListener("click", () => {
+        Score = 0;
+        score.innerText = Score;
+        highscore.innerText = Highscore;
+        Time = `0-0`;
+        time.innerText = Time;
+
+        snake.forEach((segment) => {
+          if (blocks[`${segment.x}-${segment.y}`]) {
+            blocks[`${segment.x}-${segment.y}`].classList.remove("fill");
+          }
+        });
+        blocks[`${food.x}-${food.y}`].classList.remove("food");
+        modal.style.display = "none";
+        snake = [
+          {
+            x: 1,
+            y: 2,
+          },
+        ];
+        timeIntervalId = setInterval(() => {
+          let [minutes, seconds] = Time.split("-").map(Number);
+          if (seconds >= 60) {
+            minutes += 1;
+            seconds = 0;
+          } else {
+            seconds = seconds + 1;
+          }
+          Time = `${minutes}-${seconds}`;
+          time.innerText = Time;
+        }, 1000);
+        snake.forEach((segment) => {
+          blocks[`${segment.x}-${segment.y}`].classList.add("fill");
+        });
+        food = {
+          x: Math.floor(Math.random() * rows),
+          y: Math.floor(Math.random() * columns),
+        };
+        blocks[`${food.x}-${food.y}`].classList.add("food");
+        intervalId = setInterval(() => {
+          render();
+        }, 200);
+        direction = "right";
+      });
+
+      function render() {
+        let head = null;
+        if (direction === "right") {
+          head = { x: snake[0].x, y: snake[0].y + 1 };
+        } else if (direction === "left") {
+          head = { x: snake[0].x, y: snake[0].y - 1 };
+        } else if (direction === "down") {
+          head = { x: snake[0].x + 1, y: snake[0].y };
+        } else if (direction === "up") {
+          head = { x: snake[0].x - 1, y: snake[0].y };
+        }
+        snake.forEach((segment) => {
+          blocks[`${segment.x}-${segment.y}`].classList.remove("fill");
+        });
+        snake.unshift(head);
+        snake.pop();
+        if (head.x < 0 || head.x >= rows || head.y < 0 || head.y >= columns) {
+          clearInterval(timeIntervalId);
+          clearInterval(intervalId);
+
+          modal.style.display = "flex";
+          startmodal.style.display = "none";
+          restartmodal.style.display = "flex";
+          return;
+        }
+        snake.forEach((segment) => {
+          blocks[`${segment.x}-${segment.y}`].classList.add("fill");
+        });
+        blocks[`${food.x}-${food.y}`].classList.add("food");
+        if (head.x === food.x && head.y === food.y) {
+          blocks[`${food.x}-${food.y}`].classList.remove("food");
+          food = {
+            x: Math.floor(Math.random() * rows),
+            y: Math.floor(Math.random() * columns),
+          };
+
+          snake.unshift(head);
+          Score += 10;
+          score.innerText = Score;
+          if (Score > Highscore) {
+            Highscore = Score;
+            highscore.innerText = Highscore;
+            localStorage.setItem("highscore", Highscore);
+          }
+        }
+      }
+
+      addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") {
+          direction = "right";
+        } else if (e.key === "ArrowLeft") {
+          direction = "left";
+        } else if (e.key === "ArrowDown") {
+          direction = "down";
+        } else if (e.key === "ArrowUp") {
+          direction = "up";
+        }
+      });
+    </script>
+  </body>
+</html>
